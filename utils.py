@@ -258,9 +258,9 @@ def send_data(round, metrics, model, cid):
     nonce = w3.eth.getTransactionCount(
         "0xf17f52151EbEF6C7334FAD080c5704D77216b732")
 
-    hash = get_hash(cid, round, model)
+    data_hash = get_hash(cid, round, model)
 
-    transaction = contract.functions.send(round, hash, cid).buildTransaction({
+    transaction = contract.functions.send(round, data_hash, cid).buildTransaction({
         "chainId": 1337,
         "from": "0xf17f52151EbEF6C7334FAD080c5704D77216b732",
         "gasPrice": w3.eth.gas_price,
@@ -273,14 +273,14 @@ def send_data(round, metrics, model, cid):
     tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     print("RECEIPT:", receipt)
-    
-    save_data_on_couchdb(hash, cid, round, metrics, model)
+
+    save_data_on_couchdb(data_hash, cid, round, metrics, model)
 
 
 def send_data_array(data_array):
     for data in data_array:
-        send_data(data["round"], str(pickle.dumps(
-            data["metrics"])), str(data["model"]), data["cid"])
+        send_data(data["round"], str(
+            data["metrics"]), str(data["model"]), data["cid"])
 
 
 def send_server_data_async(round, metrics, model):

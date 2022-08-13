@@ -1,10 +1,8 @@
 import pickle
 import time
-from random import randint
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import flwr as fl
-import jsonpickle
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
 from flwr.common.typing import Parameters, Scalar
