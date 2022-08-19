@@ -1,10 +1,8 @@
 import pickle
 import time
-from random import randint
 from typing import Dict, List, Optional, Tuple, Union
 
 import flwr as fl
-import jsonpickle
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
 from flwr.common.typing import Parameters, Scalar
@@ -26,7 +24,18 @@ class CustomStrategy(fl.server.strategy.FedAvg):
             client_params = []
             for tuple in results:
                 client_params.append(
-                    {"cid": tuple[0].cid, "metrics": {"accuracy": tuple[1].metrics["accuracy"], "loss": tuple[1].metrics["loss"], "round": rnd}, "model": tuple[1].metrics["model"], "round": rnd})
+                    {
+                        "cid": tuple[0].cid,
+                        "metrics": {
+                            "accuracy": tuple[1].metrics["accuracy"],
+                            "loss": tuple[1].metrics["loss"],
+                            "round": rnd
+                        },
+                        # "model": tuple[1].metrics["model"],
+                        "model": "",
+                        "round": rnd
+                    }
+                )
 
             utils.send_data_array(client_params)
 

@@ -38,12 +38,12 @@ if __name__ == "__main__":
                 loss = log_loss(y_test, model.predict_proba(X_test))
                 accuracy = model.score(X_test, y_test)
 
-                model_save = pickle.dumps(model)
+                # model_save = pickle.dumps(model)
 
                 results = {
                     "loss": loss,
-                    "accuracy": accuracy,
-                    "model": model_save
+                    "accuracy": accuracy
+                    # "model": model_save
                 }
 
             print(f"Training finished for round {config['rnd']}")
