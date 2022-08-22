@@ -5,7 +5,7 @@ from typing import List, Tuple, Union
 import numpy as np
 from dotenv import load_dotenv
 from pandas import read_csv
-from databaseutils import get_hash, save_data_on_couchdb
+# from databaseutils import get_hash, save_data_on_couchdb
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from web3 import Web3
@@ -253,14 +253,14 @@ def send_data(round, metrics, model, cid):
     print("Sending data to the network")
     w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
     w3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
-    contract = w3.eth.contract(address=min_address, abi=min_abi)
+    contract = w3.eth.contract(address=full_address, abi=full_abi)
 
     nonce = w3.eth.getTransactionCount(
         "0xf17f52151EbEF6C7334FAD080c5704D77216b732")
 
-    hash = get_hash(cid, round, model)
+    # hash = get_hash(cid, round, model)
 
-    transaction = contract.functions.send(round, hash, cid).buildTransaction({
+    transaction = contract.functions.send(round, metrics, model, cid).buildTransaction({
         "chainId": 1337,
         "from": "0xf17f52151EbEF6C7334FAD080c5704D77216b732",
         "gasPrice": w3.eth.gas_price,
@@ -274,7 +274,7 @@ def send_data(round, metrics, model, cid):
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     print("RECEIPT:", receipt)
     
-    save_data_on_couchdb(hash, cid, round, metrics, model)
+    # save_data_on_couchdb(hash, cid, round, metrics, model)
 
 
 def send_data_array(data_array):
