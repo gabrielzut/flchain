@@ -1,10 +1,9 @@
 import pickle
 import time
-from random import randint
 from typing import Dict, List, Optional, Tuple, Union
 
 import flwr as fl
-import jsonpickle
+from flwr.common import parameters_to_weights
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
 from flwr.common.typing import Parameters, Scalar
@@ -19,8 +18,9 @@ class CustomStrategy(fl.server.strategy.FedAvg):
         rnd: int,
         results: List[Tuple[fl.server.client_proxy.ClientProxy, fl.common.FitRes]],
         failures: List[BaseException],
-    ) -> Optional[fl.common.Weights]:
-        aggregated_weights = super().aggregate_fit(rnd, results, failures)
+    ) -> Tuple[Optional[Parameters], Dict[str, Scalar]]:
+        aggregated_weights, metrics_aggregated = super().aggregate_fit(rnd,
+                                                                       results, failures)
 
         if aggregated_weights is not None:
             client_params = []
@@ -30,25 +30,15 @@ class CustomStrategy(fl.server.strategy.FedAvg):
 
             utils.send_data_array(client_params)
 
-        return aggregated_weights
-
-    def fit_round(
-        self,
-        rnd: int,
-        timeout: Optional[float]
-    ) -> Optional[
-        Tuple[Optional[Parameters], Dict[str, Scalar], FitResultsAndFailures]
-    ]:
-        params, metrics_aggregated, fit_results_and_failures = super().fit_round(rnd, timeout)
-
         model = LogisticRegression()
-        utils.set_model_params(model, params)
+        utils.set_model_params(
+            model, parameters_to_weights(aggregated_weights))
 
         model_save = pickle.dumps(model)
 
         utils.send_server_data_async(rnd, "", model_save)
 
-        return params, metrics_aggregated, fit_results_and_failures
+        return aggregated_weights, metrics_aggregated
 
 
 def on_fit_fn(rnd: int) -> Dict:

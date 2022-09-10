@@ -284,4 +284,4 @@ def send_data_array(data_array):
 
 
 def send_server_data_async(round, metrics, model):
-    send_data(round, metrics, model, "server")
+    send_data(round, metrics, str(model), "server")
