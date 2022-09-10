@@ -3,6 +3,7 @@ import time
 from typing import Dict, List, Optional, Tuple
 
 import flwr as fl
+from flwr.common import parameters_to_weights
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
 from flwr.common.typing import Parameters, Scalar
@@ -17,8 +18,8 @@ class CustomStrategy(fl.server.strategy.FedAvg):
         rnd: int,
         results: List[Tuple[fl.server.client_proxy.ClientProxy, fl.common.FitRes]],
         failures: List[BaseException],
-    ) -> Optional[fl.common.Weights]:
-        aggregated_weights = super().aggregate_fit(rnd, results, failures)
+    ) -> Tuple[Optional[Parameters], Dict[str, Scalar]]:
+        aggregated_weights, metrics_aggregated = super().aggregate_fit(rnd, results, failures)
 
         if aggregated_weights is not None:
             client_params = []
@@ -28,7 +29,15 @@ class CustomStrategy(fl.server.strategy.FedAvg):
 
             utils.send_data_array(client_params)
 
-        return aggregated_weights
+        model = LogisticRegression()
+        utils.set_model_params(
+            model, parameters_to_weights(aggregated_weights))
+
+        model_save = pickle.dumps(model)
+
+        utils.send_server_data_async(rnd, "", model_save)
+
+        return aggregated_weights, metrics_aggregated
 
     def fit_round(
         self,
